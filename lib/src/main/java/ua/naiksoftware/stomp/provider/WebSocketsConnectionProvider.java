@@ -2,8 +2,6 @@ package ua.naiksoftware.stomp.provider;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
-
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
@@ -11,15 +9,15 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import ua.naiksoftware.stomp.dto.LifecycleEvent;
+import ua.naiksoftware.stomp.utils.LogUtils;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Created by naik on 05.05.16.
@@ -52,7 +50,7 @@ public class WebSocketsConnectionProvider extends AbstractConnectionProvider {
         try {
             mWebSocketClient.closeBlocking();
         } catch (InterruptedException e) {
-            Log.e(TAG, "Thread interrupted while waiting for Websocket closing: ", e);
+            LogUtils.e(TAG, "Thread interrupted while waiting for Websocket closing: ", e);
             throw new RuntimeException(e);
         }
     }
@@ -66,7 +64,7 @@ public class WebSocketsConnectionProvider extends AbstractConnectionProvider {
 
             @Override
             public void onWebsocketHandshakeReceivedAsClient(WebSocket conn, ClientHandshake request, @NonNull ServerHandshake response) throws InvalidDataException {
-                Log.d(TAG, "onWebsocketHandshakeReceivedAsClient with response: " + response.getHttpStatus() + " " + response.getHttpStatusMessage());
+                LogUtils.d(TAG, "onWebsocketHandshakeReceivedAsClient with response: " + response.getHttpStatus() + " " + response.getHttpStatusMessage());
                 mServerHandshakeHeaders = new TreeMap<>();
                 Iterator<String> keys = response.iterateHttpFields();
                 while (keys.hasNext()) {
@@ -77,7 +75,7 @@ public class WebSocketsConnectionProvider extends AbstractConnectionProvider {
 
             @Override
             public void onOpen(@NonNull ServerHandshake handshakeData) {
-                Log.d(TAG, "onOpen with handshakeData: " + handshakeData.getHttpStatus() + " " + handshakeData.getHttpStatusMessage());
+                LogUtils.d(TAG, "onOpen with handshakeData: " + handshakeData.getHttpStatus() + " " + handshakeData.getHttpStatusMessage());
                 LifecycleEvent openEvent = new LifecycleEvent(LifecycleEvent.Type.OPENED);
                 openEvent.setHandshakeResponseHeaders(mServerHandshakeHeaders);
                 emitLifecycleEvent(openEvent);
@@ -85,23 +83,23 @@ public class WebSocketsConnectionProvider extends AbstractConnectionProvider {
 
             @Override
             public void onMessage(String message) {
-                Log.d(TAG, "onMessage: " + message);
+                LogUtils.d(TAG, "onMessage: " + message);
                 emitMessage(message);
             }
 
             @Override
             public void onClose(int code, String reason, boolean remote) {
-                Log.d(TAG, "onClose: code=" + code + " reason=" + reason + " remote=" + remote);
+                LogUtils.d(TAG, "onClose: code=" + code + " reason=" + reason + " remote=" + remote);
                 haveConnection = false;
                 emitLifecycleEvent(new LifecycleEvent(LifecycleEvent.Type.CLOSED));
 
-                Log.d(TAG, "Disconnect after close.");
+                LogUtils.d(TAG, "Disconnect after close.");
                 disconnect();
             }
 
             @Override
             public void onError(Exception ex) {
-                Log.e(TAG, "onError", ex);
+                LogUtils.e(TAG, "onError", ex);
                 emitLifecycleEvent(new LifecycleEvent(LifecycleEvent.Type.ERROR, ex));
             }
         };

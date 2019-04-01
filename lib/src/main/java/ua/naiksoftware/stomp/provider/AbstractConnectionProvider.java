@@ -2,18 +2,11 @@ package ua.naiksoftware.stomp.provider;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
-
-import java.util.concurrent.TimeUnit;
-
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import ua.naiksoftware.stomp.dto.LifecycleEvent;
-import ua.naiksoftware.stomp.dto.StompHeader;
-import ua.naiksoftware.stomp.dto.StompCommand;
-import ua.naiksoftware.stomp.dto.StompMessage;
+import ua.naiksoftware.stomp.utils.LogUtils;
 
 /**
  * Created by forresthopkinsa on 8/8/2017.
@@ -76,7 +69,7 @@ public abstract class AbstractConnectionProvider implements ConnectionProvider {
             if (getSocket() == null) {
                 throw new IllegalStateException("Not connected");
             } else {
-                Log.d(TAG, "Send STOMP message: " + stompMessage);
+                LogUtils.d(TAG, "Send STOMP message: " + stompMessage);
                 rawSend(stompMessage);
                 return null;
             }
@@ -108,12 +101,12 @@ public abstract class AbstractConnectionProvider implements ConnectionProvider {
     protected abstract Object getSocket();
 
     protected void emitLifecycleEvent(@NonNull LifecycleEvent lifecycleEvent) {
-        Log.d(TAG, "Emit lifecycle event: " + lifecycleEvent.getType().name());
+        LogUtils.d(TAG, "Emit lifecycle event: " + lifecycleEvent.getType().name());
         lifecycleStream.onNext(lifecycleEvent);
     }
 
     protected void emitMessage(String stompMessage) {
-        Log.d(TAG, "Receive STOMP message: " + stompMessage);
+        LogUtils.d(TAG, "Receive STOMP message: " + stompMessage);
         messagesStream.onNext(stompMessage);
     }
 

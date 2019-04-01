@@ -3,14 +3,6 @@ package ua.naiksoftware.stomp;
 import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
@@ -18,13 +10,20 @@ import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
+import ua.naiksoftware.stomp.dto.LifecycleEvent;
 import ua.naiksoftware.stomp.dto.StompCommand;
+import ua.naiksoftware.stomp.dto.StompHeader;
 import ua.naiksoftware.stomp.dto.StompMessage;
 import ua.naiksoftware.stomp.pathmatcher.PathMatcher;
 import ua.naiksoftware.stomp.pathmatcher.SimplePathMatcher;
 import ua.naiksoftware.stomp.provider.ConnectionProvider;
-import ua.naiksoftware.stomp.dto.LifecycleEvent;
-import ua.naiksoftware.stomp.dto.StompHeader;
+import ua.naiksoftware.stomp.utils.LogUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by naik on 05.05.16.
@@ -63,7 +62,7 @@ public class StompClient {
     /**
      * Sets the heartbeat interval to request from the server.
      * <p>
-     * Not very useful yet, because we don't have any heartbeat logic on our side.
+     * Not very useful yet, because we don't have any heartbeat LogUtilsic on our side.
      *
      * @param ms heartbeat time in milliseconds
      */
@@ -75,7 +74,7 @@ public class StompClient {
     /**
      * Sets the heartbeat interval that client propose to send.
      * <p>
-     * Not very useful yet, because we don't have any heartbeat logic on our side.
+     * Not very useful yet, because we don't have any heartbeat LogUtilsic on our side.
      *
      * @param ms heartbeat time in milliseconds
      */
@@ -98,12 +97,12 @@ public class StompClient {
      */
     public void connect(@Nullable List<StompHeader> _headers) {
 
-        Log.d(TAG, "Connect");
+        LogUtils.d(TAG, "Connect");
 
         this.headers = _headers;
 
         if (isConnected()) {
-            Log.d(TAG, "Already connected, ignore");
+            LogUtils.d(TAG, "Already connected, ignore");
             return;
         }
         lifecycleDisposable = connectionProvider.lifecycle()
@@ -119,18 +118,18 @@ public class StompClient {
 
                             connectionProvider.send(new StompMessage(StompCommand.CONNECT, headers, null).compile(legacyWhitespace))
                                     .subscribe(() -> {
-                                        Log.d(TAG, "Publish open");
+                                        LogUtils.d(TAG, "Publish open");
                                         lifecyclePublishSubject.onNext(lifecycleEvent);
                                     });
                             break;
 
                         case CLOSED:
-                            Log.d(TAG, "Socket closed");
+                            LogUtils.d(TAG, "Socket closed");
                             disconnect();
                             break;
 
                         case ERROR:
-                            Log.d(TAG, "Socket closed with error");
+                            LogUtils.d(TAG, "Socket closed with error");
                             lifecyclePublishSubject.onNext(lifecycleEvent);
                             break;
                     }
@@ -202,13 +201,13 @@ public class StompClient {
     public void reconnect() {
         disconnectCompletable()
                 .subscribe(() -> connect(headers),
-                        e -> Log.e(TAG, "Disconnect error", e));
+                        e -> LogUtils.e(TAG, "Disconnect error", e));
     }
 
     @SuppressLint("CheckResult")
     public void disconnect() {
         disconnectCompletable().subscribe(() -> {
-        }, e -> Log.e(TAG, "Disconnect error", e));
+        }, e -> LogUtils.e(TAG, "Disconnect error", e));
     }
 
     public Completable disconnectCompletable() {
@@ -224,7 +223,7 @@ public class StompClient {
 
         return connectionProvider.disconnect()
                 .doFinally(() -> {
-                    Log.d(TAG, "Stomp disconnected");
+                    LogUtils.d(TAG, "Stomp disconnected");
                     getConnectionStream().onComplete();
                     getMessageStream().onComplete();
                     lifecyclePublishSubject.onNext(new LifecycleEvent(LifecycleEvent.Type.CLOSED));
@@ -256,7 +255,7 @@ public class StompClient {
 
         // Only continue if we don't already have a subscription to the topic
         if (topics.containsKey(destinationPath)) {
-            Log.d(TAG, "Attempted to subscribe to already-subscribed path!");
+            LogUtils.d(TAG, "Attempted to subscribe to already-subscribed path!");
             return Completable.complete();
         }
 
@@ -277,7 +276,7 @@ public class StompClient {
         String topicId = topics.get(dest);
         topics.remove(dest);
 
-        Log.d(TAG, "Unsubscribe path: " + dest + " id: " + topicId);
+        LogUtils.d(TAG, "Unsubscribe path: " + dest + " id: " + topicId);
 
         return send(new StompMessage(StompCommand.UNSUBSCRIBE,
                 Collections.singletonList(new StompHeader(StompHeader.ID, topicId)), null)).onErrorComplete();
