@@ -105,6 +105,7 @@ public class StompMessage {
         if (data.contains("unauthorized_user")) {
             return new IllegalAccessException("unauthorized_user");
         }
+        return new Exception(data);
     }
 
     @Override
