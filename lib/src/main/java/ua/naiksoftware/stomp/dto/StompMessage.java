@@ -95,7 +95,7 @@ public class StompMessage {
 
         // recognize unauthorized_user
         if (StompCommand.ERROR.equals(command)) {
-            throw parseError(command, payload);
+            throw parseError(data, payload);
         }
 
         return new StompMessage(command, headers, payload);
