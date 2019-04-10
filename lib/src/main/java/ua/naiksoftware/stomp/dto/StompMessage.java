@@ -71,7 +71,7 @@ public class StompMessage {
         return builder.toString();
     }
 
-    public static StompMessage from(@Nullable String data) {
+    public static StompMessage from(@Nullable String data) throws Exception {
         if (data == null || data.trim().isEmpty()) {
             return new StompMessage(StompCommand.UNKNOWN, null, data);
         }
@@ -93,7 +93,18 @@ public class StompMessage {
         reader.useDelimiter(TERMINATE_MESSAGE_SYMBOL);
         String payload = reader.hasNext() ? reader.next() : null;
 
+        // recognize unauthorized_user
+        if (StompCommand.ERROR.equals(command)) {
+            throw parseError(command, payload);
+        }
+
         return new StompMessage(command, headers, payload);
+    }
+
+    private static Exception parseError(String data, String payload) {
+        if (data.contains("unauthorized_user")) {
+            return new IllegalAccessException("unauthorized_user");
+        }
     }
 
     @Override

@@ -140,9 +140,8 @@ public class StompClient {
                 .filter(heartBeatTask::consumeHeartBeat)
                 .doOnNext(getMessageStream()::onNext)
                 .filter(msg -> msg.getStompCommand().equals(StompCommand.CONNECTED))
-                .subscribe(stompMessage -> {
-                    getConnectionStream().onNext(true);
-                });
+                .subscribe(stompMessage -> getConnectionStream().onNext(true),
+                        t -> lifecyclePublishSubject.onNext(new LifecycleEvent(LifecycleEvent.Type.ERROR, (Exception) t)));
     }
 
     synchronized private BehaviorSubject<Boolean> getConnectionStream() {
