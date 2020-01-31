@@ -7,7 +7,7 @@ import android.util.Log;
  */
 public class LogUtils {
 
-    public static boolean logEnable = true;
+    public static boolean logEnable = false;
 
     public static void v(String tag, String msg) {
         if (logEnable) {
