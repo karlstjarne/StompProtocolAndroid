@@ -1,6 +1,6 @@
 # STOMP protocol via WebSocket for Android
 
-[![Release](https://jitpack.io/v/epolar/StompProtocolAndroid.svg)](https://jitpack.io/#epolar/StompProtocolAndroid)
+[![Release](https://jitpack.io/v/karlstjarne/StompProtocolAndroid.svg)](https://jitpack.io/#karlstjarne/StompProtocolAndroid)
 
 
 ## Overview
